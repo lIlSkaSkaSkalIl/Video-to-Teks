@@ -73,6 +73,12 @@ Notebook ini **tidak menyimpan cookies, token, atau data pribadi**. Semua file h
 
 ---
 
-## 👤 Author
-Dibuat oleh **Deni Skinhead**  
-Mendukung alur kerja profesional untuk transkripsi otomatis, subtitle, dan konversi video langsung dari Google Colab.
+## 👨‍💻 Author
+
+Created by [lIlSkaSkaSkalIl](https://github.com/lIlSkaSkaSkalIl/)
+
+---
+
+## 📄 Lisensi
+
+Proyek ini dilisensikan di bawah MIT License.

@@ -75,7 +75,9 @@ Notebook ini **tidak menyimpan cookies, token, atau data pribadi**. Semua file h
 
 ## 👨‍💻 Author
 
-Created by [lIlSkaSkaSkalIl](https://github.com/lIlSkaSkaSkalIl/)
+Proyek ini dikembangkan oleh [lIlSkaSkaSkalIl](https://github.com/lIlSkaSkaSkalIl),  
+dengan tujuan menyediakan solusi praktis untuk transkripsi video otomatis berbasis Whisper dan Python.  
+Terbuka untuk kolaborasi dan pengembangan lebih lanjut melalui kontribusi komunitas.
 
 ---
 

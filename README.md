@@ -59,7 +59,7 @@ Semua library akan otomatis diinstal saat notebook dijalankan.
 
 ## ▶️ Open in Colab
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/https://github.com/lIlSkaSkaSkalIl/Video-to-Teks/blob/1a0b237dddc0955b778d0968d78abfa74b77130b/Video%20to%20Teks.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/lIlSkaSkaSkalIl/Video-to-Teks/blob/1a0b237dddc0955b778d0968d78abfa74b77130b/Video%20to%20Teks.ipynb)
 
 ---
 

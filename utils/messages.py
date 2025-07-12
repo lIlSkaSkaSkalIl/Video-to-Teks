@@ -1,5 +1,5 @@
 # utils/messages.py
-
+# ┌ ┐ └ ┘ ─ │ ├ ┤ ┬ ┴ ┼
 def log(msg, icon="📌"):
     print(f"{icon} {msg}")
     
@@ -16,22 +16,22 @@ def show_download_summary(tweet_url, tweet_id, use_cookies, info, downloaded, vi
     total_size_mb = sum(os.path.getsize(f) for f in downloaded) / (1024 * 1024)
 
     print("\n📊 Ringkasan Status:")
-    print(f"- 📌 URL Tweet       : {tweet_url}")
-    print(f"- 🆔 ID Tweet        : {tweet_id}")
-    print(f"- 🔐 Cookies         : {'✅ Digunakan' if use_cookies else '❌ Tidak digunakan'}")
-    print(f"- 📄 Metadata JSON   : {'✅ Tersimpan' if info else '❌ Tidak ada'}")
-    print(f"- 📁 Total Video     : {len(downloaded)} file")
-    print(f"- 💾 Ukuran Total    : {total_size_mb:.2f} MB")
-    print(f"- 🕒 Selesai pada    : {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"- 📂 Lokasi Video    : {video_dir}")
-    print(f"- 📜 Daftar File     :")
+    print(f"┌─📌 URL Tweet       : {tweet_url}")
+    print(f"├─🆔 ID Tweet        : {tweet_id}")
+    print(f"├─🔐 Cookies         : {'✅ Digunakan' if use_cookies else '❌ Tidak digunakan'}")
+    print(f"├─📄 Metadata JSON   : {'✅ Tersimpan' if info else '❌ Tidak ada'}")
+    print(f"├─📁 Total Video     : {len(downloaded)} file")
+    print(f"├─💾 Ukuran Total    : {total_size_mb:.2f} MB")
+    print(f"├─🕒 Selesai pada    : {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"├─📂 Lokasi Video    : {video_dir}")
+    print(f"└─📜 Daftar File     :")
     for i, fname in enumerate(file_names, 1):
-        print(f"   {i}. {fname}")
+        print(f"     {i}. {fname}")
 
 def show_download_info(video_url, download_type, output_path):
-    print(f"🎯 Link: {video_url}")
-    print(f"🧩 Jenis Unduhan: {download_type}")
-    print(f"📁 File akan disimpan di: {output_path}")
+    print(f"┌─🎯 Link: {video_url}")
+    print(f"├─🧩 Jenis Unduhan: {download_type}")
+    print(f"└─📁 File akan disimpan di: {output_path}")
 
 def download_summary(path):
     if os.path.exists(path):
@@ -45,5 +45,5 @@ def show_tool_detection(tool):
     log(f"Menggunakan alat unduhan: {tool}", icon="🚀")
 
 def audio_success(path, size_str):
-    print(f"📍 Lokasi Output : {path}")
-    print(f"📦 Ukuran Audio  : {size_str}")
+    print(f"┌─📍 Lokasi Output : {path}")
+    print(f"└─📦 Ukuran Audio  : {size_str}")

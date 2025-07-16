@@ -1,5 +1,3 @@
-# downloader/twitter.py
-
 import os
 import re
 import json
@@ -15,7 +13,7 @@ def download_tweet_video(tweet_url: str, video_dir: str, output_dir: str, cookie
         raise ValueError("❌ Invalid URL: Tweet ID not found.")
     tweet_id = match.group(1)
 
-    # 🔍 Simulate Metadata
+    # 🔍 Simulate Metadata (tanpa cookies dulu)
     info = None
     ydl_opts = {
         "quiet": True,
@@ -30,9 +28,20 @@ def download_tweet_video(tweet_url: str, video_dir: str, output_dir: str, cookie
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(tweet_url, download=False)
     except Exception as e:
-        log(f"Failed to fetch metadata: {e}", icon="❌")
-        if "authentication" in str(e).lower():
-            log("Tweet might require cookies.txt (authentication needed).", icon="🔐")
+        log(f"Metadata fetch failed (no cookies): {e}", icon="⚠️")
+        # 🔐 Jika gagal dan cookies tersedia, ulangi dengan cookies
+        if os.path.exists(cookies_path):
+            log("Retrying metadata fetch using cookies.txt...", icon="🔐")
+            ydl_opts["cookiesfrombrowser"] = None  # clear browser cookies setting
+            ydl_opts["cookiefile"] = cookies_path
+            try:
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    info = ydl.extract_info(tweet_url, download=False)
+                log("Metadata fetched with cookies.", icon="✅")
+            except Exception as e2:
+                log(f"Metadata fetch with cookies failed: {e2}", icon="❌")
+        else:
+            log("Cookies not found. Cannot retry metadata fetch.", icon="🚫")
 
     # 💾 Save metadata
     if info:
@@ -58,7 +67,7 @@ def download_tweet_video(tweet_url: str, video_dir: str, output_dir: str, cookie
         tweet_url
     ]
 
-    # Run subprocess with tqdm progress bar
+    # ▶️ Run subprocess with tqdm progress bar
     progress_bar = tqdm(total=100, desc="📥 Download", unit="%")
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 

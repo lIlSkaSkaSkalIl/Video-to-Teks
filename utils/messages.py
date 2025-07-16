@@ -10,23 +10,36 @@ def folder_structure_status(video_dir, audio_dir, output_dir, log_dir):
     print(f"   ├─📜 Output: {output_dir}")
     print(f"   └─🧾 Log   : {log_dir}")
 
-def show_download_summary(tweet_url, tweet_id, use_cookies, info, downloaded, video_dir):
-    import os, datetime
-    file_names = [os.path.basename(f) for f in downloaded]
-    total_size_mb = sum(os.path.getsize(f) for f in downloaded) / (1024 * 1024)
+def show_download_summary(tweet_url, tweet_id, use_cookies, elapsed, downloaded_files, video_dir):
+    print("\n📊 Download Summary:")
+    print(f"┌─📌 Tweet URL        : {tweet_url}")
+    print(f"├─🆔 Tweet ID         : {tweet_id}")
+    print(f"├─🔐 Cookies Used     : {'✅ Yes' if use_cookies else '❌ No'}")
+    print(f"├─💾 Elapsed Time     : {elapsed:.2f} sec")
+    print(f"├─📁 Videos Downloaded: {len(downloaded_files)} file(s)")
+    print(f"├─📂 Saved To         : {video_dir}")
+    print(f"└─📜 File List        :")
 
-    print("\n📊 Ringkasan Status:")
-    print(f"┌─📌 URL Tweet       : {tweet_url}")
-    print(f"├─🆔 ID Tweet        : {tweet_id}")
-    print(f"├─🔐 Cookies         : {'✅ Digunakan' if use_cookies else '❌ Tidak digunakan'}")
-    print(f"├─📄 Metadata JSON   : {'✅ Tersimpan' if info else '❌ Tidak ada'}")
-    print(f"├─📁 Total Video     : {len(downloaded)} file")
-    print(f"├─💾 Ukuran Total    : {total_size_mb:.2f} MB")
-    print(f"├─🕒 Selesai pada    : {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"├─📂 Lokasi Video    : {video_dir}")
-    print(f"└─📜 Daftar File     :")
-    for i, fname in enumerate(file_names, 1):
-        print(f"     {i}. {fname}")
+    for i, f in enumerate(downloaded_files, 1):
+        fname = os.path.basename(f)
+        print(f"   {i}. {fname}")
+        info_path = f"{os.path.splitext(f)[0]}.info.json"
+        if os.path.exists(info_path):
+            try:
+                with open(info_path, "r", encoding="utf-8") as meta_file:
+                    meta = json.load(meta_file)
+                width = meta.get("width") or "?"
+                height = meta.get("height") or "?"
+                resolution = f"{width}x{height}" if width and height else "?"
+                size_mb = os.path.getsize(f) / (1024 * 1024)
+                duration = meta.get("duration") or "?"
+                print(f"      └─🎞️ Resolution : {resolution}")
+                print(f"      └─💾 File Size  : {size_mb:.2f} MB")
+                print(f"      └─⏱️ Duration   : {duration} sec")
+            except Exception as e:
+                print(f"      └─⚠️ Failed to read metadata: {e}")
+        else:
+            print(f"      └─⚠️ Metadata not found.")
 
 def show_download_info(video_url, download_type, output_path):
     print(f"┌─🎯 Link: {video_url}")

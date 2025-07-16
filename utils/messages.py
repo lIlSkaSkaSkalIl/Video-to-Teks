@@ -1,5 +1,7 @@
 # utils/messages.py
 # ┌ ┐ └ ┘ ─ │ ├ ┤ ┬ ┴ ┼
+import os
+
 def log(msg, icon="📌"):
     print(f"{icon} {msg}")
     

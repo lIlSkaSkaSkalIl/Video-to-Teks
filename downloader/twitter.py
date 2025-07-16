@@ -3,6 +3,7 @@ import re
 import json
 import glob
 import subprocess
+import time
 from tqdm import tqdm
 from utils.messages import log, show_download_summary
 
@@ -13,61 +14,26 @@ def download_tweet_video(tweet_url: str, video_dir: str, output_dir: str, cookie
         raise ValueError("❌ Invalid URL: Tweet ID not found.")
     tweet_id = match.group(1)
 
-    # 🔍 Simulate Metadata (tanpa cookies dulu)
-    info = None
-    ydl_opts = {
-        "quiet": True,
-        "simulate": True,
-        "extract_flat": True,
-        "dump_single_json": True,
-    }
+    # 📁 Buat direktori jika belum ada
+    os.makedirs(video_dir, exist_ok=True)
+    os.makedirs(output_dir, exist_ok=True)
 
-    log(f"Fetching tweet metadata... ({tweet_url})", icon="🔍")
-    try:
-        import yt_dlp
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(tweet_url, download=False)
-    except Exception as e:
-        log(f"Metadata fetch failed (no cookies): {e}", icon="⚠️")
-        # 🔐 Jika gagal dan cookies tersedia, ulangi dengan cookies
-        if os.path.exists(cookies_path):
-            log("Retrying metadata fetch using cookies.txt...", icon="🔐")
-            ydl_opts["cookiesfrombrowser"] = None  # clear browser cookies setting
-            ydl_opts["cookiefile"] = cookies_path
-            try:
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    info = ydl.extract_info(tweet_url, download=False)
-                log("Metadata fetched with cookies.", icon="✅")
-            except Exception as e2:
-                log(f"Metadata fetch with cookies failed: {e2}", icon="❌")
-        else:
-            log("Cookies not found. Cannot retry metadata fetch.", icon="🚫")
-
-    # 💾 Save metadata
-    if info:
-        json_path = os.path.join(output_dir, f"tweet_meta_{tweet_id}.json")
-        with open(json_path, "w", encoding="utf-8") as f:
-            json.dump(info, f, ensure_ascii=False, indent=2)
-        log(f"Metadata saved to: {json_path}", icon="📄")
-    else:
-        log("Metadata not available or not saved.", icon="⚠️")
-
-    # 🍪 Check for cookies
+    # 🍪 Cek cookies
     use_cookies = os.path.exists(cookies_path)
-    log("Using cookies.txt" if use_cookies else "Not using cookies", icon="🔐" if use_cookies else "🔓")
+    cookie_args = ["--cookies", cookies_path] if use_cookies else []
 
-    # 📥 Prepare yt-dlp command
-    log("Starting video download...\n", icon="📥")
-    command = ["yt-dlp"]
-    if use_cookies:
-        command += ["--cookies", cookies_path]
-    command += [
+    # 📥 Mulai download
+    log("Starting tweet video download...", "📥")
+    start_time = time.time()
+
+    output_template = os.path.join(video_dir, "%(id)s.%(ext)s")
+    command = [
+        "yt-dlp",
         "-f", "best",
-        "-o", os.path.join(video_dir, "%(id)s_video.%(ext)s"),
-        tweet_url
-    ]
+        "--write-info-json",
+        "-o", output_template,
+    ] + cookie_args + [tweet_url]
 
-    # ▶️ Run subprocess with tqdm progress bar
     progress_bar = tqdm(total=100, desc="📥 Download", unit="%")
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
@@ -80,14 +46,46 @@ def download_tweet_video(tweet_url: str, video_dir: str, output_dir: str, cookie
                 progress_bar.n = int(percent)
                 progress_bar.refresh()
         elif "[download]" in line or "Destination" in line:
-            print(line)
+            log(line)
     process.wait()
     progress_bar.n = 100
     progress_bar.refresh()
     progress_bar.close()
 
-    log("Download complete.", icon="✅")
+    end_time = time.time()
+    elapsed = round(end_time - start_time, 2)
+    log("Download completed.", "✅")
 
-    # 📦 Summary
-    downloaded_files = glob.glob(os.path.join(video_dir, "*_video.*"))
-    show_download_summary(tweet_url, tweet_id, use_cookies, info, downloaded_files, video_dir)
+    # 📦 Kumpulkan video yang berhasil diunduh
+    video_exts = (".mp4", ".mkv", ".webm", ".mov", ".avi")
+    downloaded_files = [
+        os.path.join(video_dir, f)
+        for f in os.listdir(video_dir)
+        if f.lower().endswith(video_exts)
+    ]
+
+    # 📄 Baca metadata dari .info.json
+    for video_file in downloaded_files:
+        info_file = f"{os.path.splitext(video_file)[0]}.info.json"
+        if os.path.exists(info_file):
+            try:
+                with open(info_file, "r", encoding="utf-8") as f:
+                    meta = json.load(f)
+                # Simpan metadata ke output_dir
+                meta_save_path = os.path.join(output_dir, f"tweet_meta_{tweet_id}.json")
+                with open(meta_save_path, "w", encoding="utf-8") as out:
+                    json.dump(meta, out, ensure_ascii=False, indent=2)
+                log(f"Metadata saved to: {meta_save_path}", icon="📄")
+            except Exception as e:
+                log(f"Failed to read/save metadata: {e}", icon="⚠️")
+        else:
+            log("Metadata not found (.info.json missing)", icon="⚠️")
+
+show_download_summary(
+    tweet_url=tweet_url,
+    tweet_id=tweet_id,
+    use_cookies=use_cookies,
+    elapsed=elapsed,
+    downloaded_files=downloaded_files,
+    video_dir=video_dir
+)

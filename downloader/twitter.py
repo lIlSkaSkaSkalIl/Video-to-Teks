@@ -1,7 +1,6 @@
 import os
 import re
 import json
-import glob
 import subprocess
 import time
 from tqdm import tqdm
@@ -14,19 +13,19 @@ def download_tweet_video(tweet_url: str, video_dir: str, output_dir: str, cookie
         raise ValueError("❌ Invalid URL: Tweet ID not found.")
     tweet_id = match.group(1)
 
-    # 📁 Buat direktori jika belum ada
+    # 📁 Prepare directories
     os.makedirs(video_dir, exist_ok=True)
     os.makedirs(output_dir, exist_ok=True)
 
-    # 🍪 Cek cookies
+    # 🍪 Check for cookies
     use_cookies = os.path.exists(cookies_path)
     cookie_args = ["--cookies", cookies_path] if use_cookies else []
 
-    # 📥 Mulai download
+    # 📥 Prepare yt-dlp command
     log("Starting tweet video download...", "📥")
     start_time = time.time()
-
     output_template = os.path.join(video_dir, "%(id)s.%(ext)s")
+
     command = [
         "yt-dlp",
         "-f", "best",
@@ -34,6 +33,7 @@ def download_tweet_video(tweet_url: str, video_dir: str, output_dir: str, cookie
         "-o", output_template,
     ] + cookie_args + [tweet_url]
 
+    # ▶️ Run download with progress
     progress_bar = tqdm(total=100, desc="📥 Download", unit="%")
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
@@ -56,7 +56,7 @@ def download_tweet_video(tweet_url: str, video_dir: str, output_dir: str, cookie
     elapsed = round(end_time - start_time, 2)
     log("Download completed.", "✅")
 
-    # 📦 Kumpulkan video yang berhasil diunduh
+    # 📦 Collect downloaded videos
     video_exts = (".mp4", ".mkv", ".webm", ".mov", ".avi")
     downloaded_files = [
         os.path.join(video_dir, f)
@@ -64,14 +64,13 @@ def download_tweet_video(tweet_url: str, video_dir: str, output_dir: str, cookie
         if f.lower().endswith(video_exts)
     ]
 
-    # 📄 Baca metadata dari .info.json
+    # 💾 Copy metadata to output_dir
     for video_file in downloaded_files:
         info_file = f"{os.path.splitext(video_file)[0]}.info.json"
         if os.path.exists(info_file):
             try:
                 with open(info_file, "r", encoding="utf-8") as f:
                     meta = json.load(f)
-                # Simpan metadata ke output_dir
                 meta_save_path = os.path.join(output_dir, f"tweet_meta_{tweet_id}.json")
                 with open(meta_save_path, "w", encoding="utf-8") as out:
                     json.dump(meta, out, ensure_ascii=False, indent=2)
@@ -81,11 +80,12 @@ def download_tweet_video(tweet_url: str, video_dir: str, output_dir: str, cookie
         else:
             log("Metadata not found (.info.json missing)", icon="⚠️")
 
-show_download_summary(
-    tweet_url=tweet_url,
-    tweet_id=tweet_id,
-    use_cookies=use_cookies,
-    elapsed=elapsed,
-    downloaded_files=downloaded_files,
-    video_dir=video_dir
-)
+    # 📊 Show summary
+    show_download_summary(
+        tweet_url=tweet_url,
+        tweet_id=tweet_id,
+        use_cookies=use_cookies,
+        elapsed=elapsed,
+        downloaded_files=downloaded_files,
+        video_dir=video_dir
+    )
